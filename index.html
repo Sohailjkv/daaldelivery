@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OneKart – One Platform. Many Suppliers.</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      color: #333;
+    }
+
+    header {
+      background: #0a7cff;
+      color: #fff;
+      padding: 14px;
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+
+    section {
+      padding: 16px;
+      background: #fff;
+      margin: 12px;
+      border-radius: 8px;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .products label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+    }
+
+    .products input[type="number"] {
+      width: 90px;
+    }
+
+    button {
+      background: #25d366;
+      color: #fff;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #0a7cff;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.85rem;
+      padding: 12px;
+      color: #777;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  OneKart
+  <div style="font-size:0.85rem;font-weight:normal;">
+    One Platform for Products, Rentals & Services
+  </div>
+</header>
+
+<!-- CUSTOMER INFO -->
+<section>
+  <h2>Business Details</h2>
+  <input id="name" placeholder="Business / Owner Name">
+  <input id="phone" placeholder="Phone Number">
+</section>
+
+<!-- ADDRESS MANAGEMENT -->
+<section>
+  <h2>Delivery Location</h2>
+
+  <select id="addressSelect">
+    <option value="">Select saved location</option>
+  </select>
+
+  <input id="label" placeholder="Location name (e.g. Cafe Talwandi)">
+  <textarea id="address" placeholder="Delivery address"></textarea>
+
+  <button class="secondary" onclick="saveAddress()">Save Location</button>
+</section>
+
+<!-- PRODUCTS -->
+<section>
+  <h2>Select Products</h2>
+
+  <div class="products">
+    <label>
+      <input type="checkbox" value="Wheat Flour">
+      Wheat Flour
+      <input type="number" min="1" placeholder="kg">
+    </label>
+
+    <label>
+      <input type="checkbox" value="Sugar">
+      Sugar
+      <input type="number" min="1" placeholder="kg">
+    </label>
+
+    <label>
+      <input type="checkbox" value="Cooking Oil">
+      Cooking Oil
+      <input type="number" min="1" placeholder="litre">
+    </label>
+
+    <label>
+      <input type="checkbox" value="Rice">
+      Rice
+      <input type="number" min="1" placeholder="kg">
+    </label>
+  </div>
+</section>
+
+<!-- ORDER -->
+<section>
+  <button onclick="sendWhatsApp()">Order on WhatsApp</button>
+</section>
+
+<footer>
+  © 2026 OneKart by LG Services
+</footer>
+
+<script>
+  const STORAGE_KEY = "onekart_customer";
+
+  let customer = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+    name: "",
+    phone: "",
+    addresses: []
+  };
+
+  window.onload = () => {
+    document.getElementById("name").value = customer.name || "";
+    document.getElementById("phone").value = customer.phone || "";
+    refreshAddressDropdown();
+  };
+
+  function refreshAddressDropdown() {
+    const select = document.getElementById("addressSelect");
+    select.innerHTML = "<option value=''>Select saved location</option>";
+
+    customer.addresses.forEach((a, i) => {
+      select.innerHTML += `<option value="${i}">${a.label}</option>`;
+    });
+  }
+
+  document.getElementById("addressSelect").onchange = function () {
+    const i = this.value;
+    if (i !== "") {
+      document.getElementById("label").value = customer.addresses[i].label;
+      document.getElementById("address").value = customer.addresses[i].address;
+    }
+  };
+
+  function saveAddress() {
+    const label = document.getElementById("label").value.trim();
+    const address = document.getElementById("address").value.trim();
+
+    if (!label || !address) {
+      alert("Please enter location name and address");
+      return;
+    }
+
+    customer.addresses.push({ label, address });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(customer));
+    refreshAddressDropdown();
+    alert("Location saved");
+  }
+
+  function sendWhatsApp() {
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const addrIndex = document.getElementById("addressSelect").value;
+
+    if (!name || !phone || addrIndex === "") {
+      alert("Please fill business info and select location");
+      return;
+    }
+
+    customer.name = name;
+    customer.phone = phone;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(customer));
+
+    let orderText = "";
+    document.querySelectorAll(".products label").forEach(label => {
+      const cb = label.querySelector("input[type='checkbox']");
+      const qty = label.querySelector("input[type='number']").value;
+      if (cb.checked && qty) {
+        orderText += `- ${cb.value}: ${qty}\n`;
+      }
+    });
+
+    if (!orderText) {
+      alert("Please select at least one product");
+      return;
+    }
+
+    const location = customer.addresses[addrIndex];
+
+    const message = `
+📦 New Order – OneKart
+
+Business: ${name}
+Phone: ${phone}
+
+Delivery Location: ${location.label}
+Address: ${location.address}
+
+Order:
+${orderText}
+
+Please confirm price & delivery.
+    `;
+
+    const WHATSAPP_NUMBER = "7014598260";
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+  }
+</script>
+
+</body>
+</html>
