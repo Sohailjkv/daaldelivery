@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OneKart – Business Supplies</title>
+
+<style>
+/* ---------- RESET ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Arial, sans-serif;
+  background: #f7f7f7;
+  color: #222;
+}
+
+/* ---------- HEADER ---------- */
+header {
+  background: #0a7cff;
+  color: #fff;
+  padding: 12px 16px;
+}
+header h1 {
+  font-size: 20px;
+}
+header p {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* ---------- HERO ---------- */
+.hero {
+  padding: 20px;
+  background: #fff;
+}
+.hero h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+.hero p {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.btn {
+  display: inline-block;
+  background: #25D366;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* ---------- SECTIONS ---------- */
+section {
+  margin-top: 12px;
+  background: #fff;
+  padding: 16px;
+}
+.section-title {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+/* ---------- GRID ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+.card {
+  border: 1px solid #ddd;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fafafa;
+  text-align: center;
+}
+
+/* ---------- PRODUCTS ---------- */
+.product {
+  border: 1px solid #ddd;
+  padding: 12px;
+  border-radius: 8px;
+}
+.product button {
+  margin-top: 8px;
+  width: 100%;
+  padding: 8px;
+  background: #0a7cff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+}
+
+/* ---------- CART ---------- */
+.cart-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid #ccc;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cart-bar button {
+  background: #25D366;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* ---------- FOOTER ---------- */
+footer {
+  padding: 16px;
+  font-size: 12px;
+  text-align: center;
+  color: #666;
+  margin-bottom: 60px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+  <h1>OneKart</h1>
+  <p>One Platform for Products, Rentals & Services</p>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <h2>Supplies for Food Businesses</h2>
+  <p>Order products via WhatsApp. Fast, reliable & local.</p>
+  <a class="btn" href="#products">Order on WhatsApp</a>
+</div>
+
+<!-- WHO WE SERVE -->
+<section>
+  <h3 class="section-title">Who We Serve</h3>
+  <div class="grid">
+    <div class="card">☕ Cafés</div>
+    <div class="card">🍽 Restaurants</div>
+    <div class="card">🍬 Sweet Shops</div>
+    <div class="card">🍱 Caterers</div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section>
+  <h3 class="section-title">Categories</h3>
+  <div class="grid">
+    <div class="card">🥣 Food Supplies</div>
+    <div class="card">🏗 Construction (Coming Soon)</div>
+    <div class="card">🛠 Rentals (Coming Soon)</div>
+    <div class="card">⚙ Services (Coming Soon)</div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <h3 class="section-title">Food Supplies</h3>
+  <div class="grid" id="productList"></div>
+</section>
+
+<!-- WHY US -->
+<section>
+  <h3 class="section-title">Why OneKart?</h3>
+  <ul style="line-height:1.8;font-size:14px;">
+    <li>🚚 Local & fast delivery</li>
+    <li>📦 Bulk business orders</li>
+    <li>🔁 Easy repeat ordering</li>
+    <li>📞 Direct WhatsApp support</li>
+  </ul>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  © 2026 OneKart · Kota<br>
+  WhatsApp orders only
+</footer>
+
+<!-- CART BAR -->
+<div class="cart-bar">
+  <span id="cartCount">0 items selected</span>
+  <button onclick="sendWhatsApp()">Order Now</button>
+</div>
+
+<script>
+/* ---------- PRODUCTS ---------- */
+const products = [
+  "Wheat Flour",
+  "Sugar",
+  "Cooking Oil",
+  "Rice",
+  "Besan",
+  "Maida"
+];
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+/* ---------- RENDER PRODUCTS ---------- */
+const productList = document.getElementById("productList");
+products.forEach(p => {
+  const div = document.createElement("div");
+  div.className = "product";
+  div.innerHTML = `
+    <strong>${p}</strong><br>
+    <small>Unit: kg</small>
+    <button onclick="addToCart('${p}')">Add</button>
+  `;
+  productList.appendChild(div);
+});
+
+updateCartUI();
+
+/* ---------- CART FUNCTIONS ---------- */
+function addToCart(item) {
+  cart.push(item);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartUI();
+}
+
+function updateCartUI() {
+  document.getElementById("cartCount").innerText =
+    `${cart.length} items selected`;
+}
+
+/* ---------- WHATSAPP ---------- */
+function sendWhatsApp() {
+  if (cart.length === 0) {
+    alert("Please add products first");
+    return;
+  }
+
+  const message =
+    "New Order from OneKart Website\n\n" +
+    "Products:\n" +
+    cart.map((i, idx) => `${idx+1}. ${i}`).join("\n");
+
+  const phone = "91XXXXXXXXXX"; // replace with your number
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  window.open(url, "_blank");
+}
+</script>
+
+</body>
+</html>
